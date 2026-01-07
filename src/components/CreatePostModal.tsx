@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export default function CreatePostModal({
   onClose,
   onSubmit,
 }: CreatePostModalProps) {
+  const { data: session } = useSession();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -36,7 +38,9 @@ export default function CreatePostModal({
       {/* 彈窗本體 */}
       <div className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
         <h3 className="text-lg font-bold mb-4 dark:text-white">建立新貼文</h3>
-
+        {session
+          ? `發文身分：${session.user?.name}`
+          : "⚠️ 您尚未登入，將以匿名身分發布"}
         <input
           type="text"
           placeholder="標題"

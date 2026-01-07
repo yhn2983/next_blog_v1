@@ -1,7 +1,7 @@
 // src/lib/db.ts
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.mongodbUri!;
+const MONGODB_URI = process.env.mongodbUri;
 
 if (!MONGODB_URI) {
   throw new Error("請在 .env.local 中定義 MONGODB_URI");

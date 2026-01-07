@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import { Post } from "@/models/Post";
 import { NextResponse } from "next/server";
@@ -21,6 +23,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const session = await getServerSession(authOptions);
     const { title, content } = await req.json();
     if (!title || !content) {
       return NextResponse.json(
@@ -28,7 +31,13 @@ export async function POST(req: Request) {
         { status: 400 } // 400 代表 Bad Request (用戶端錯誤)
       );
     }
-    const newPost = await Post.create({ title, content });
+    const newPost = await Post.create({
+      title,
+      content,
+      author: session ? session.user?.name : "匿名用戶",
+      authorEmail: session ? session.user?.email : null,
+      isAnonymous: !session,
+    });
     return NextResponse.json(newPost, { status: 201 }); // 201 代表 Created
   } catch (error) {
     console.error("POST 錯誤:", error);

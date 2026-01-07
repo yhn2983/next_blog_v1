@@ -6,7 +6,9 @@ const PostSchema = new Schema(
   {
     title: { type: String, required: [true, "請輸入標題"] },
     content: { type: String, required: [true, "請輸入內容"] },
-    author: { type: String, default: "開發者" },
+    author: { type: String, default: "匿名用戶" },
+    authorEmail: { type: String, default: null },
+    isAnonymous: { type: Boolean, default: false },
   },
   {
     timestamps: true,

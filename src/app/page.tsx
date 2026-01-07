@@ -12,6 +12,8 @@ interface Post {
   _id: number;
   title: string;
   content: string;
+  author?: string;
+  createdAt?: string;
 }
 
 export default function Home() {
@@ -81,7 +83,7 @@ export default function Home() {
                 key={post._id}
                 title={post.title}
                 content={post.content}
-                author="開發者" // 這裡可以根據資料代入
+                author={post.author} // 這裡可以根據資料代入
               />
             ))
           ) : (

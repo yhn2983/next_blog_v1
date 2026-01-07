@@ -1,5 +1,8 @@
 "use client";
 
+import { useSession, signOut } from "next-auth/react"; // 1. 引入 NextAuth
+import Link from "next/link"; // 引入 Link 做導轉
+
 interface NavbarProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
@@ -13,10 +16,13 @@ export default function Navbar({
   onOpenModal,
   toggleDarkMode,
 }: NavbarProps) {
+  const { data: session, status } = useSession();
   return (
     <nav className="bg-white dark:bg-zinc-900 border-b dark:border-zinc-800 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="font-bold text-xl text-blue-600 shrink-0">DevForum</div>
+        <Link href="/" className="font-bold text-xl text-blue-600 shrink-0">
+          DevForum
+        </Link>
 
         {/* 搜尋區塊 */}
         <div className="flex-1 max-w-lg mx-4 group">
@@ -65,6 +71,40 @@ export default function Navbar({
           >
             發帖
           </button>
+          {status === "authenticated" ? (
+            <>
+              <div className="flex items-center gap-3 ml-2 border-l pl-4 dark:border-zinc-700">
+                <span className="text-sm font-medium dark:text-white">
+                  {session.user?.name}
+                </span>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })} // 2. 使用 signOut 函式登出
+                  className="text-sm text-red-500 hover:text-red-600 font-medium"
+                >
+                  登出
+                </button>
+              </div>
+            </>
+          ) : status === "unauthenticated" ? (
+            <>
+              {/* 未登入：顯示登入與註冊按鈕 */}
+              <Link
+                href="/login"
+                className="text-sm font-medium dark:text-white hover:text-blue-600 transition"
+              >
+                登入
+              </Link>
+              <Link
+                href="/register"
+                className="bg-blue-600 text-white px-4 py-2 rounded-full font-bold hover:bg-blue-700 transition"
+              >
+                註冊
+              </Link>
+            </>
+          ) : (
+            /* 讀取中狀態：可以放個簡單的 loading 或空白 */
+            <div className="w-20 h-8 bg-gray-100 dark:bg-zinc-800 animate-pulse rounded-full"></div>
+          )}
         </div>
       </div>
     </nav>
