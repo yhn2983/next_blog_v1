@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react"; // 引入 NextAuth 的登入函數
 import { useRouter } from "next/navigation";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -64,6 +65,7 @@ export default function LoginPage() {
         >
           登入
         </button>
+        <GoogleLoginButton />
       </form>
     </div>
   );
