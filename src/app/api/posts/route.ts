@@ -51,11 +51,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(newPost, { status: 201 });
   } catch (error: any) {
-    // 🔍 這裡會印出 Mongoose 具體是哪個欄位驗證失敗
-    console.error("POST 錯誤詳情:", error.message);
-    return NextResponse.json(
-      { error: error.message || "Failed to create post" },
-      { status: 500 }
-    );
+    console.error("GET 錯誤:", error);
+
+    // 🔴 即使錯誤也回傳空陣列，防止前端 .filter() 崩潰
+    // 可以在 Header 帶入錯誤訊息供除錯
+    return NextResponse.json([], {
+      status: 500,
+      statusText: "Internal Server Error",
+    });
   }
 }
