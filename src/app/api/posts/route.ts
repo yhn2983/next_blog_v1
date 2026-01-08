@@ -9,12 +9,12 @@ export async function GET() {
   try {
     await connectDB();
     const posts = await Post.find().sort({ createdAt: -1 });
-    return NextResponse.json(posts, { status: 200 }); // 200 代表 OK
+    return NextResponse.json(posts, { status: 200 });
   } catch (error) {
     console.error("GET 錯誤:", error);
     return NextResponse.json(
       { error: "Failed to fetch posts" },
-      { status: 500 } // 500 代表 Internal Server Error (伺服器錯誤)
+      { status: 500 }
     );
   }
 }
@@ -24,26 +24,38 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
-    const { title, content } = await req.json();
+
+    // 🔍 這裡可以在終端機看到 Session 是否真的有 id
+    //console.log("當前登入者資訊:", session?.user);
+
+    const body = await req.json();
+    const { title, content } = body;
+
     if (!title || !content) {
-      return NextResponse.json(
-        { error: "Title and content are required" },
-        { status: 400 } // 400 代表 Bad Request (用戶端錯誤)
-      );
+      return NextResponse.json({ error: "標題與內容為必填" }, { status: 400 });
     }
+
+    // 🚀 建立貼文
     const newPost = await Post.create({
       title,
       content,
-      author: session ? session.user?.name : "匿名用戶",
-      authorEmail: session ? session.user?.email : null,
+      // 如果有 session 則用 session 資料，否則用預設值
+      author: session?.user?.name || "匿名用戶",
+      // 🔑 重點：如果 session 沒抓到 ID，就給它字串 "anonymous" 避免 Mongoose 報錯
+      authorId: session?.user?.id || "anonymous",
+      authorEmail: session?.user?.email || null,
       isAnonymous: !session,
+      likes: [], // 預設空陣列避免前端錯誤
+      comments: [], // 預設空陣列避免前端錯誤
     });
-    return NextResponse.json(newPost, { status: 201 }); // 201 代表 Created
-  } catch (error) {
-    console.error("POST 錯誤:", error);
+
+    return NextResponse.json(newPost, { status: 201 });
+  } catch (error: any) {
+    // 🔍 這裡會印出 Mongoose 具體是哪個欄位驗證失敗
+    console.error("POST 錯誤詳情:", error.message);
     return NextResponse.json(
-      { error: "Failed to create post" },
-      { status: 500 } // 500 代表 Internal Server Error (伺服器錯誤)
+      { error: error.message || "Failed to create post" },
+      { status: 500 }
     );
   }
 }

@@ -7,13 +7,21 @@ import CreatePostModal from "@/components/CreatePostModal";
 import PostCard from "@/components/PostCard";
 import Navbar from "@/components/Navbar";
 
+interface IPostComment {
+  userId: string;
+  text: string;
+  createdAt: string;
+}
 // 定義貼文型別
 interface Post {
-  _id: number;
+  _id: string;
   title: string;
   content: string;
   author?: string;
+  authorId: string; // 新增：刪除功能必備
   createdAt?: string;
+  likes: string[]; // 確保這裡存在
+  comments: IPostComment[]; // 使用改名後的型別
 }
 
 export default function Home() {
@@ -35,6 +43,7 @@ export default function Home() {
   const handleAddPost = async (title: string, content: string) => {
     const res = await fetch("/api/posts", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, content }),
     });
     const newPost = await res.json();
@@ -43,11 +52,13 @@ export default function Home() {
   };
 
   // --- 2. 搜尋邏輯 (自動過濾) ---
-  const filteredPosts = posts.filter(
-    (post) =>
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPosts = posts.filter((post) => {
+    const title = post.title?.toLowerCase() || "";
+    const content = post.content?.toLowerCase() || "";
+    const query = searchQuery.toLowerCase();
+
+    return title.includes(query) || content.includes(query);
+  });
 
   // --- 3. 功能函數 ---
 
@@ -78,12 +89,17 @@ export default function Home() {
         {/* 貼文流：使用 map 渲染 */}
         <div className="space-y-6">
           {filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => (
+            filteredPosts.map((post, index) => (
               <PostCard
-                key={post._id}
+                key={post._id || `temp-${index}`}
+                id={post._id}
                 title={post.title}
                 content={post.content}
                 author={post.author} // 這裡可以根據資料代入
+                authorId={post.authorId}
+                date={post.createdAt || ""}
+                initialLikes={post.likes} // 這裡把資料庫的 likes 陣列傳進去
+                initialComments={post.comments}
               />
             ))
           ) : (
